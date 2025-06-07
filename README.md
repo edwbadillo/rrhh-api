@@ -32,7 +32,9 @@ Sistema backend para la gestión de Recursos Humanos, desarrollado con Spring Bo
 | `DB_PASSWD` | Contraseña correspondiente al usuario de la base de datos.      | *(requerido)*     |
 
 
-## 🔑 Autenticación con Firebase
+## 🔗 Integración con Firebase
+Crea un archivo `serviceAccountKey.json` con las credenciales del proyecto de Firebase [más información](https://firebase.google.com/docs/admin/setup?hl=es-419#initialize-sdk). Este archivo debe estar ubicado en la carpeta `src/main/resources`.
+
 Debes tener un proyecto de Firebase configurado y configurar las variables de entorno correspondientes. El proyecto utiliza el SDK de Firebase Admin para interactuar con Firebase Authentication.
 Debes asociar el ID del usuario Firebase con el ID del usuario registrado en la base de datos.
 
