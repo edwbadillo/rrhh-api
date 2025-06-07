@@ -1,0 +1,90 @@
+package com.edwin.rrhh_api.modules.user;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+
+@DataJpaTest
+@ActiveProfiles("test")
+public class AuthRepositoryTest {
+
+    @Autowired
+    private AuthUserRepository repository;
+
+    @Test
+    void findByRoleIn_shouldReturnOnlyMatchingRoles() {
+        // Preparar datos
+        AuthUser user1 = AuthUser.builder()
+                .firebaseUid("uid1")
+                .email("admin@test.com")
+                .fullName("Admin User")
+                .role("ADMIN")
+                .isActive(true)
+                .createdAt(null)
+                .updatedAt(null)
+                .build();
+
+        AuthUser user2 = AuthUser.builder()
+                .firebaseUid("uid2")
+                .email("rh@test.com")
+                .fullName("RH User")
+                .role("RH")
+                .isActive(true)
+                .createdAt(null)
+                .updatedAt(null)
+                .build();
+
+        AuthUser user3 = AuthUser.builder()
+                .firebaseUid("uid3")
+                .email("employee@test.com")
+                .fullName("Employee User")
+                .role("EMPLOYEE")
+                .isActive(true)
+                .createdAt(null)
+                .updatedAt(null)
+                .build();
+
+        repository.saveAll(List.of(user1, user2, user3));
+
+        // Ejecutar
+        List<AuthUser> result = repository.findByRoleIn(List.of("ADMIN", "RH"));
+
+        // Verificar
+        assertThat(result)
+                .hasSize(2)
+                .extracting(AuthUser::getRole)
+                .containsExactlyInAnyOrder("ADMIN", "RH");
+    }
+
+    @Test
+    void findByFirebaseUid_shouldReturnUser() {
+        AuthUser user1 = AuthUser.builder()
+                .firebaseUid("uid1")
+                .email("admin@test.com")
+                .fullName("Admin User")
+                .role("ADMIN")
+                .isActive(true)
+                .createdAt(null)
+                .updatedAt(null)
+                .build();
+
+        repository.save(user1);
+
+        AuthUser result = repository.findByFirebaseUid("uid1");
+
+        assertThat(result)
+                .isNotNull()
+                .extracting(AuthUser::getFirebaseUid)
+                .isEqualTo("uid1");
+
+        AuthUser result2 = repository.findByFirebaseUid("uid2");
+
+        assertThat(result2).isNull();
+    }
+}
