@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -76,15 +77,16 @@ public class AuthRepositoryTest {
 
         repository.save(user1);
 
-        AuthUser result = repository.findByFirebaseUid("uid1");
+        Optional<AuthUser> result = repository.findByFirebaseUid("uid1");
 
         assertThat(result)
-                .isNotNull()
-                .extracting(AuthUser::getFirebaseUid)
-                .isEqualTo("uid1");
+                .isPresent()
+                .hasValueSatisfying(user ->
+                        assertThat(user.getFirebaseUid()).isEqualTo("uid1")
+                );
 
-        AuthUser result2 = repository.findByFirebaseUid("uid2");
+        Optional<AuthUser> result2 = repository.findByFirebaseUid("uid2");
 
-        assertThat(result2).isNull();
+        assertThat(result2).isEmpty();
     }
 }
