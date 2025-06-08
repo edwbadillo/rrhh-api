@@ -3,6 +3,7 @@ package com.edwin.rrhh_api.modules.user;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -14,5 +15,5 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, UUID> {
 
     List<AuthUser> findByRoleIn(List<String> roles);
 
-    <Optional> AuthUser findByFirebaseUid(String firebaseUid);
+    Optional<AuthUser> findByFirebaseUid(String firebaseUid);
 }
