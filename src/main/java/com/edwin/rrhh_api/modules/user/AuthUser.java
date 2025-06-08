@@ -27,23 +27,23 @@ public class AuthUser {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "firebase_uid")
+    // @Column(name = "firebase_uid")
     private String firebaseUid;
 
     private String email;
 
-    @Column(name = "full_name")
+    // @Column(name = "full_name")
     private String fullName;
 
     private String role;
 
-    @Column(name = "is_active")
+    // @Column(name = "is_active")
     private boolean isActive;
 
-    @Column(name = "created_at")
+    // @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at")
+    // @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
     @PrePersist
