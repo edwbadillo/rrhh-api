@@ -1,12 +1,11 @@
 package com.edwin.rrhh_api.modules.user;
 
+import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
+import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,5 +37,16 @@ public class AuthUserController {
     @GetMapping("/{id}")
     public AuthUserResponse findById(@PathVariable UUID id) {
         return authUserService.findById(id);
+    }
+
+    /**
+     * Crea un nuevo usuario en firebase y posteriormente lo registra en la base de datos.
+     *
+     * @param request {@link CreateUserRequest}
+     * @return {@link AuthUserDetailsResponse}
+     */
+    @PostMapping
+    public AuthUserDetailsResponse createUser(@RequestBody CreateUserRequest request) {
+        return authUserService.createUser(request);
     }
 }

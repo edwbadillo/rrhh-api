@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
  * @param email email del usuario
  * @param fullName nombre completo del usuario
  */
-public record UserCreateRequest(
+public record CreateUserRequest(
     @NotBlank(message = "El correo electrónico es obligatorio")
     @Email(message = "El formato del correo electrónico no es válido")
     String email,

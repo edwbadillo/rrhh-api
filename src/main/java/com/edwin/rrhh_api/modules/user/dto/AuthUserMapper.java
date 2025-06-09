@@ -6,4 +6,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AuthUserMapper {
     AuthUserResponse toResponse(AuthUser entity);
+    AuthUserDetailsResponse toDetailsResponse(AuthUser entity);
 }
