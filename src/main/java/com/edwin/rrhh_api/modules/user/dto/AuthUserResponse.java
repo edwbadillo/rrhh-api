@@ -1,5 +1,7 @@
 package com.edwin.rrhh_api.modules.user.dto;
 
+import lombok.Builder;
+
 /**
  * DTO con la información de un usuario registrado en base de datos.
  *
@@ -7,13 +9,14 @@ package com.edwin.rrhh_api.modules.user.dto;
  * @param email email del usuario
  * @param fullName nombre completo del usuario
  * @param role rol del usuario
- * @param isActive estado del usuario
+ * @param active estado del usuario
  */
+@Builder
 public record AuthUserResponse(
         String id,
         String email,
         String fullName,
         String role,
-        Boolean isActive
+        Boolean active
 ) {
 }

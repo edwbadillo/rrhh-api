@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,5 +55,29 @@ public class AuthUserControllerTest {
     void shouldReturnForbiddenIfEmployeeAuthenticated() throws Exception {
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void findById_shouldReturnUserResponse() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        AuthUserResponse response = new AuthUserResponse(
+                userId.toString(),
+                "test@example.com",
+                "Test User",
+                "ADMIN",
+                true
+        );
+
+        when(authUserService.findById(userId)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/users/{id}", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId.toString()))
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.fullName").value("Test User"))
+                .andExpect(jsonPath("$.role").value("ADMIN"))
+                .andExpect(jsonPath("$.active").value(true));
     }
 }
