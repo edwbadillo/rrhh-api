@@ -1,6 +1,6 @@
 package com.edwin.rrhh_api.modules.user;
 
-import com.edwin.rrhh_api.modules.user.dto.AuthUserInfo;
+import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +23,7 @@ public class AuthUserController {
      * @return List<AuthUserInfo>
      */
     @GetMapping
-    public List<AuthUserInfo> findAll() {
+    public List<AuthUserResponse> findAll() {
         return authUserService.findAll();
     }
 }

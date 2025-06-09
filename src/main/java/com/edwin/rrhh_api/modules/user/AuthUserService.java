@@ -1,7 +1,7 @@
 package com.edwin.rrhh_api.modules.user;
 
 
-import com.edwin.rrhh_api.modules.user.dto.AuthUserInfo;
+import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ public interface AuthUserService {
      *
      * @return List<AuthUserInfo>
      */
-    List<AuthUserInfo> findAll();
+    List<AuthUserResponse> findAll();
 }

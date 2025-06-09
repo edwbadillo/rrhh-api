@@ -1,6 +1,6 @@
 package com.edwin.rrhh_api.modules.user;
 
-import com.edwin.rrhh_api.modules.user.dto.AuthUserInfo;
+import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,7 +48,7 @@ public class AuthUserServiceTest {
         when(authUserRepository.findByRoleIn(List.of("ADMIN", "RH")))
                 .thenReturn(mockUsers);
 
-        List<AuthUserInfo> result = authUserService.findAll();
+        List<AuthUserResponse> result = authUserService.findAll();
 
         assertThat(result).hasSize(2);
         assertThat(result).extracting("role").containsExactlyInAnyOrder("ADMIN", "RH");

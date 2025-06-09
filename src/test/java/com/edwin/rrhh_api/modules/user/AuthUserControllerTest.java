@@ -1,7 +1,7 @@
 package com.edwin.rrhh_api.modules.user;
 
 import com.edwin.rrhh_api.config.security.ControllerTest;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserInfo;
+import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -28,9 +28,9 @@ public class AuthUserControllerTest {
     @Test
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     void shouldReturnListOfUsersIfAdminAuthenticated() throws Exception {
-        List<AuthUserInfo> users = List.of(
-                new AuthUserInfo(UUID.randomUUID().toString(), "admin@test.com", "ADMIN USER", "ADMIN", true),
-                new AuthUserInfo(UUID.randomUUID().toString(), "rh@test.com", "RH USER", "RH", true)
+        List<AuthUserResponse> users = List.of(
+                new AuthUserResponse(UUID.randomUUID().toString(), "admin@test.com", "ADMIN USER", "ADMIN", true),
+                new AuthUserResponse(UUID.randomUUID().toString(), "rh@test.com", "RH USER", "RH", true)
         );
 
         given(authUserService.findAll()).willReturn(users);
@@ -45,6 +45,13 @@ public class AuthUserControllerTest {
     @Test
     @WithMockUser(username = "rh", roles = {"RH"})
     void shouldReturnForbiddenIfRhAuthenticated() throws Exception {
+        mockMvc.perform(get("/api/v1/users"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "employee", roles = {"EMPLOYEE"})
+    void shouldReturnForbiddenIfEmployeeAuthenticated() throws Exception {
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isForbidden());
     }
