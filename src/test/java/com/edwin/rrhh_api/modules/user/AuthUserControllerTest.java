@@ -1,10 +1,10 @@
 package com.edwin.rrhh_api.modules.user;
 
+import com.edwin.rrhh_api.config.security.ControllerTest;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 
-@AutoConfigureMockMvc(addFilters = false)
-@WebMvcTest(AuthUserController.class)
+@ControllerTest(controllers = AuthUserController.class)
 public class AuthUserControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -27,7 +26,8 @@ public class AuthUserControllerTest {
     private AuthUserService authUserService;
 
     @Test
-    void shouldReturnListOfUsers() throws Exception {
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void shouldReturnListOfUsersIfAdminAuthenticated() throws Exception {
         List<AuthUserInfo> users = List.of(
                 new AuthUserInfo(UUID.randomUUID().toString(), "admin@test.com", "ADMIN USER", "ADMIN", true),
                 new AuthUserInfo(UUID.randomUUID().toString(), "rh@test.com", "RH USER", "RH", true)
@@ -40,5 +40,12 @@ public class AuthUserControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].fullName").value("ADMIN USER"))
                 .andExpect(jsonPath("$[1].role").value("RH"));
+    }
+
+    @Test
+    @WithMockUser(username = "rh", roles = {"RH"})
+    void shouldReturnForbiddenIfRhAuthenticated() throws Exception {
+        mockMvc.perform(get("/api/v1/users"))
+                .andExpect(status().isForbidden());
     }
 }
