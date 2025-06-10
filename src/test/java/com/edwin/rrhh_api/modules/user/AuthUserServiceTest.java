@@ -1,19 +1,28 @@
 package com.edwin.rrhh_api.modules.user;
 
+import com.edwin.rrhh_api.common.exception.EmailAlreadyExistsException;
+import com.edwin.rrhh_api.config.security.FirebaseService;
+import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserMapper;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
+import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
+import com.edwin.rrhh_api.modules.user.email.UserCreatedData;
+import com.edwin.rrhh_api.modules.user.email.UserEmail;
 import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
+import com.google.firebase.auth.UserRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -25,6 +34,12 @@ public class AuthUserServiceTest {
 
     @Mock
     private AuthUserMapper authUserMapper;
+
+    @Mock
+    private FirebaseService firebaseService;
+
+    @Mock
+    private UserEmail userEmail;
 
     @InjectMocks
     private AuthUserServiceImpl authUserService;
@@ -147,4 +162,104 @@ public class AuthUserServiceTest {
         UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> authUserService.findById(id));
         assertThat(exception.getMessage()).isEqualTo("User not found");
     }
+
+    @Test
+    void createUser_shouldCreateUserSuccessfully() {
+        CreateUserRequest request = new CreateUserRequest("test@email.com", "Test User");
+
+        when(authUserRepository.existsByEmail(request.email())).thenReturn(false);
+        when(firebaseService.userExistsByEmail(request.email())).thenReturn(false);
+
+        UserRecord userRecord = mock(UserRecord.class);
+        when(userRecord.getUid()).thenReturn("firebase-uid");
+
+        when(firebaseService.createUser(anyString(), anyString(), anyString()))
+                .thenReturn(userRecord);
+
+        when(firebaseService.createEmailVerificationLink(request.email()))
+                .thenReturn("https://firebase-link");
+
+        doNothing().when(userEmail).sendCreatedUserEmail(any(UserCreatedData.class));
+
+        AuthUser savedUser = AuthUser.builder()
+                .id(UUID.randomUUID())
+                .firebaseUid("firebase-uid")
+                .email(request.email())
+                .fullName(request.fullName())
+                .role("RH")
+                .isActive(true)
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        when(authUserRepository.save(any(AuthUser.class))).thenReturn(savedUser);
+
+        AuthUserDetailsResponse expectedResponse = AuthUserDetailsResponse.builder()
+                .id(savedUser.getId().toString())
+                .email(savedUser.getEmail())
+                .fullName(savedUser.getFullName())
+                .role(savedUser.getRole())
+                .active(savedUser.isActive())
+                .createdAt(savedUser.getCreatedAt())
+                .updatedAt(savedUser.getUpdatedAt())
+                .build();
+
+        when(authUserMapper.toDetailsResponse(savedUser)).thenReturn(expectedResponse);
+
+        AuthUserDetailsResponse result = authUserService.createUser(request);
+
+        assertThat(result).isEqualTo(expectedResponse);
+
+        verify(authUserRepository).existsByEmail(request.email());
+        verify(firebaseService).userExistsByEmail(request.email());
+        verify(firebaseService).createUser(anyString(), anyString(), anyString());
+        verify(firebaseService).createEmailVerificationLink(request.email());
+        verify(userEmail).sendCreatedUserEmail(any(UserCreatedData.class));
+    }
+
+    @Test
+    void createUser_shouldThrowIfEmailExistsInDatabase() {
+        CreateUserRequest request = new CreateUserRequest("test@email.com", "User");
+
+        when(authUserRepository.existsByEmail(request.email())).thenReturn(true);
+
+        EmailAlreadyExistsException exception = assertThrows(EmailAlreadyExistsException.class, () -> authUserService.createUser(request));
+        assertThat(exception.getMessage()).isEqualTo("Email already exists");
+        assertThat(exception.getSource()).isEqualTo("db");
+
+        verify(firebaseService, never()).userExistsByEmail(anyString());
+        verify(authUserRepository, never()).save(any());
+    }
+
+    @Test
+    void createUser_shouldThrowIfEmailExistsInFirebase() {
+        CreateUserRequest request = new CreateUserRequest("test@email.com", "User");
+
+        when(authUserRepository.existsByEmail(request.email())).thenReturn(false);
+        when(firebaseService.userExistsByEmail(request.email())).thenReturn(true);
+
+        EmailAlreadyExistsException exception = assertThrows(EmailAlreadyExistsException.class, () -> authUserService.createUser(request));
+        assertThat(exception.getMessage()).isEqualTo("Email already exists");
+        assertThat(exception.getSource()).isEqualTo("firebase");
+
+        verify(authUserRepository, never()).save(any());
+    }
+
+    @Test
+    void createUser_shouldThrowIfFirebaseFails() {
+        CreateUserRequest request = new CreateUserRequest("fail@email.com", "User");
+
+        when(authUserRepository.existsByEmail(request.email())).thenReturn(false);
+        when(firebaseService.userExistsByEmail(request.email())).thenReturn(false);
+
+        when(firebaseService.createUser(anyString(), anyString(), anyString()))
+                .thenThrow(new RuntimeException("Firebase error"));
+
+        assertThatThrownBy(() -> authUserService.createUser(request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Firebase error");
+
+        verify(authUserRepository, never()).save(any());
+    }
+
 }

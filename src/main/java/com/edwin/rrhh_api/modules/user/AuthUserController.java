@@ -3,6 +3,7 @@ package com.edwin.rrhh_api.modules.user;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +47,7 @@ public class AuthUserController {
      * @return {@link AuthUserDetailsResponse}
      */
     @PostMapping
-    public AuthUserDetailsResponse createUser(@RequestBody CreateUserRequest request) {
+    public AuthUserDetailsResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return authUserService.createUser(request);
     }
 }
