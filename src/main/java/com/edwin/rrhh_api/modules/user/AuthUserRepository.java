@@ -16,4 +16,6 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, UUID> {
     List<AuthUser> findByRoleIn(List<String> roles);
 
     Optional<AuthUser> findByFirebaseUid(String firebaseUid);
+
+    boolean existsByEmail(String email);
 }

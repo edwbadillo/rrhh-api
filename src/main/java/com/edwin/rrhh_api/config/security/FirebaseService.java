@@ -1,5 +1,6 @@
 package com.edwin.rrhh_api.config.security;
 
+import com.edwin.rrhh_api.common.exception.EmailAlreadyExistsException;
 import com.google.firebase.auth.AuthErrorCode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -49,6 +50,9 @@ public class FirebaseService {
         try {
             return firebaseAuth.createUser(request);
         } catch (FirebaseAuthException e) {
+            if (e.getAuthErrorCode() == AuthErrorCode.EMAIL_ALREADY_EXISTS)
+                throw new EmailAlreadyExistsException("Email already exists", "firebase");
+
             throw new RuntimeException("Error creando usuario", e);
         }
     }
