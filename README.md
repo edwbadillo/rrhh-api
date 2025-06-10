@@ -23,13 +23,19 @@ Sistema backend para la gestión de Recursos Humanos, desarrollado con Spring Bo
 - **Firebase Admin SDK**
 
 ## 📝 Variables de entorno
-| Variable    | Descripción                                                     | Valor por defecto |
-| ----------- | --------------------------------------------------------------- |-------------------|
-| `DB_HOST`   | Dirección del host de la base de datos PostgreSQL.              | `localhost`       |
-| `DB_PORT`   | Puerto en el que PostgreSQL está escuchando.                    | `5432`            |
-| `DB_NAME`   | Nombre de la base de datos a la que se conectará la aplicación. | *(requerido)*     |
-| `DB_USER`   | Usuario con permisos para acceder a la base de datos.           | *(requerido)*     |
-| `DB_PASSWD` | Contraseña correspondiente al usuario de la base de datos.      | *(requerido)*     |
+| Variable        | Descripción                                                               | Valor por defecto |
+| --------------- | ------------------------------------------------------------------------- | ---------------- |
+| `DB_HOST`       | Dirección del host de la base de datos PostgreSQL.                        | `localhost`      |
+| `DB_PORT`       | Puerto en el que PostgreSQL está escuchando.                              | `5432`           |
+| `DB_NAME`       | Nombre de la base de datos a la que se conectará la aplicación.           | *(requerido)*    |
+| `DB_USER`       | Usuario con permisos para acceder a la base de datos.                     | *(requerido)*    |
+| `DB_PASSWD`     | Contraseña correspondiente al usuario de la base de datos.                | *(requerido)*    |
+| `MAIL_HOST`     | Host del servidor SMTP para el envío de correos.                          | *(requerido)*    |
+| `MAIL_PORT`     | Puerto del servidor SMTP.                                                 | *(requerido)*    |
+| `MAIL_USER`     | Usuario (correo) que se usará para autenticar con el servidor SMTP.       | *(requerido)*    |
+| `MAIL_PASSWORD` | Contraseña o token del usuario SMTP.                                      | *(requerido)*    |
+| `SENDER_EMAIL`  | Dirección de correo que aparecerá como remitente en los correos enviados. | *(requerido)*    |
+
 
 
 ## 🔗 Integración con Firebase
