@@ -41,10 +41,11 @@ public class FirebaseService {
      * @param password contraseña del usuario a crear
      * @return el usuario creado
      */
-    public UserRecord createUser(String email, String password) {
+    public UserRecord createUser(String email, String name, String password) {
         UserRecord.CreateRequest request = new UserRecord.CreateRequest()
                 .setEmail(email)
-                .setPassword(password);
+                .setPassword(password)
+                .setDisplayName(name);
         try {
             return firebaseAuth.createUser(request);
         } catch (FirebaseAuthException e) {

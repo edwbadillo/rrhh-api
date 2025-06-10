@@ -1,5 +1,6 @@
 package com.edwin.rrhh_api.modules.user;
 
+import com.edwin.rrhh_api.common.PasswordGenerator;
 import com.edwin.rrhh_api.config.security.FirebaseService;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserMapper;
@@ -48,9 +49,9 @@ public class AuthUserServiceImpl implements AuthUserService {
     public AuthUserDetailsResponse createUser(CreateUserRequest request) {
         // TODO: Validar si el email ya existe (firebase y postgresql)
 
-        String password = "secret";
+        String password = PasswordGenerator.generateHexPassword(8);
 
-        UserRecord userRecord = firebaseService.createUser(request.email(), password);
+        UserRecord userRecord = firebaseService.createUser(request.email(), request.fullName(), password);
         String firebaseUid = userRecord.getUid();
 
         AuthUser newUser = AuthUser.builder()
