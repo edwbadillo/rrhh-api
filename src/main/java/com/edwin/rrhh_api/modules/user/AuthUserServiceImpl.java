@@ -5,6 +5,8 @@ import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserMapper;
 import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
+import com.edwin.rrhh_api.modules.user.email.UserCreatedData;
+import com.edwin.rrhh_api.modules.user.email.UserEmail;
 import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class AuthUserServiceImpl implements AuthUserService {
     private final AuthUserRepository authUserRepository;
     private final AuthUserMapper authUserMapper;
     private final FirebaseService firebaseService;
+    private final UserEmail userEmail;
 
     @Override
     public List<AuthUserResponse> findAll() {
@@ -44,10 +47,10 @@ public class AuthUserServiceImpl implements AuthUserService {
     @Override
     public AuthUserDetailsResponse createUser(CreateUserRequest request) {
         // TODO: Validar si el email ya existe (firebase y postgresql)
-        // TODO: Enviar correo de confirmación
-        // TODO: Enviar correo de bienvenida con la contraseña
 
-        UserRecord userRecord = firebaseService.createUser(request.email(), "secret");
+        String password = "secret";
+
+        UserRecord userRecord = firebaseService.createUser(request.email(), password);
         String firebaseUid = userRecord.getUid();
 
         AuthUser newUser = AuthUser.builder()
@@ -61,7 +64,28 @@ public class AuthUserServiceImpl implements AuthUserService {
                 .build();
 
         AuthUser savedUser = authUserRepository.save(newUser);
+
+        sendCreatedUserEmail(savedUser, password);
+
         return authUserMapper.toDetailsResponse(savedUser);
 
     }
+
+    /**
+     * Envía un correo de verificación al usuario creado
+     *
+     * @param savedUser {@link AuthUser} creado.
+     * @param password  contraseña del usuario generada
+     */
+    private void sendCreatedUserEmail(AuthUser savedUser, String password) {
+        String confirmationUrl = firebaseService.createEmailVerificationLink(savedUser.getEmail());
+        UserCreatedData userCreatedData = UserCreatedData.builder()
+                .user(savedUser)
+                .password(password)
+                .confirmationUrl(confirmationUrl)
+                .build();
+
+        userEmail.sendCreatedUserEmail(userCreatedData);
+    }
+
 }
