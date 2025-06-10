@@ -33,6 +33,7 @@ public class AuthFilter extends OncePerRequestFilter {
             try {
                 FirebaseToken firebaseToken = firebaseTokenVerifier.verify(idToken);
                 String firebaseUid = firebaseToken.getUid();
+                // TODO: Validar que el correo esté verificado en firebase
                 AuthUserDetails user = authUserDetailsService.loadUserByFirebaseUid(firebaseUid);
                 if (Objects.nonNull(user)) {
                     UsernamePasswordAuthenticationToken authentication =
