@@ -276,6 +276,7 @@ public class AuthUserServiceTest {
         UserRecord firebaseUser = mock(UserRecord.class);
         when(firebaseUser.getEmail()).thenReturn("old@example.com");
 
+        when(authUserRepository.existsByEmailIgnoreCaseAndIdNot("new@example.com", userId)).thenReturn(false);
         when(authUserRepository.findById(userId)).thenReturn(Optional.of(user));
         when(firebaseService.getUserById("firebase-uid")).thenReturn(firebaseUser);
         when(authUserRepository.save(user)).thenReturn(user);
@@ -306,6 +307,7 @@ public class AuthUserServiceTest {
         UserRecord firebaseUser = mock(UserRecord.class);
         when(firebaseUser.getEmail()).thenReturn("same@example.com");
 
+        when(authUserRepository.existsByEmailIgnoreCaseAndIdNot("same@example.com", userId)).thenReturn(false);
         when(authUserRepository.findById(userId)).thenReturn(Optional.of(user));
         when(firebaseService.getUserById("firebase-uid")).thenReturn(firebaseUser);
 
@@ -321,6 +323,8 @@ public class AuthUserServiceTest {
     @Test
     void shouldThrowIfUserNotFoundInDatabase() {
         UUID userId = UUID.randomUUID();
+
+        when(authUserRepository.existsByEmailIgnoreCaseAndIdNot("new@example.com", userId)).thenReturn(false);
         when(authUserRepository.findById(userId)).thenReturn(Optional.empty());
         UpdateUserEmailRequest request = new UpdateUserEmailRequest("new@example.com");
 
@@ -338,6 +342,7 @@ public class AuthUserServiceTest {
                 .email("old@example.com")
                 .build();
 
+        when(authUserRepository.existsByEmailIgnoreCaseAndIdNot("new@example.com", userId)).thenReturn(false);
         when(authUserRepository.findById(userId)).thenReturn(Optional.of(user));
         when(firebaseService.getUserById("firebase-uid")).thenThrow(new UserNotFoundException("Firebase user not found"));
 
@@ -360,6 +365,7 @@ public class AuthUserServiceTest {
         UserRecord firebaseUser = mock(UserRecord.class);
         when(firebaseUser.getEmail()).thenReturn("old@example.com");
 
+        when(authUserRepository.existsByEmailIgnoreCaseAndIdNot("new@example.com", userId)).thenReturn(false);
         when(authUserRepository.findById(userId)).thenReturn(Optional.of(user));
         when(firebaseService.getUserById("firebase-uid")).thenReturn(firebaseUser);
         doThrow(new EmailAlreadyExistsException("El nuevo correo ya está registrado en Firebase", "firebase"))
@@ -372,5 +378,26 @@ public class AuthUserServiceTest {
         );
     }
 
+    @Test
+    void updateUserEmail_shouldThrowExceptionIfEmailAlreadyExistsForAnotherUser() {
+        UUID userId = UUID.randomUUID();
+        String newEmail = "duplicate@example.com";
+
+        when(authUserRepository.existsByEmailIgnoreCaseAndIdNot(newEmail, userId)).thenReturn(true);
+
+        EmailAlreadyExistsException ex = assertThrows(
+                EmailAlreadyExistsException.class,
+                () -> authUserService.updateUserEmail(userId, new UpdateUserEmailRequest(newEmail))
+        );
+
+        assertEquals("Email already exists", ex.getMessage());
+        assertEquals("db", ex.getSource());
+
+        verify(authUserRepository, never()).findById(any());
+        verify(firebaseService, never()).getUserById(any());
+        verify(firebaseService, never()).updateUserEmail(any(), any());
+        verify(authUserRepository, never()).save(any());
+        verify(userEmail, never()).sendConfirmationEmailUpdated(any());
+    }
 
 }

@@ -18,4 +18,6 @@ public interface AuthUserRepository extends JpaRepository<AuthUser, UUID> {
     Optional<AuthUser> findByFirebaseUid(String firebaseUid);
 
     boolean existsByEmail(String email);
+
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, UUID id);
 }

@@ -77,6 +77,9 @@ public class AuthUserServiceImpl implements AuthUserService {
 
     @Override
     public UpdateEmailResponse updateUserEmail(UUID id, UpdateUserEmailRequest request) {
+        if (authUserRepository.existsByEmailIgnoreCaseAndIdNot(request.email(), id))
+            throw new EmailAlreadyExistsException("Email already exists", "db");
+
         AuthUser userDB = authUserRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
