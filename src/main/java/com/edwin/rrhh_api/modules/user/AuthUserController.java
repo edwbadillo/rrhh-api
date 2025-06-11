@@ -1,8 +1,6 @@
 package com.edwin.rrhh_api.modules.user;
 
-import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
-import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
+import com.edwin.rrhh_api.modules.user.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,5 +47,17 @@ public class AuthUserController {
     @PostMapping
     public AuthUserDetailsResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return authUserService.createUser(request);
+    }
+
+    /**
+     * Actualiza el email de un usuario, el usuario debe verificar nuevamente su correo electrónico
+     *
+     * @param id      UUID del usuario a actualizar
+     * @param request Nuevo email del usuario
+     * @return {@link AuthUserDetailsResponse}
+     */
+    @PutMapping("/{id}")
+    public UpdateEmailResponse updateUserEmail(@PathVariable UUID id, @Valid @RequestBody UpdateUserEmailRequest request) {
+        return authUserService.updateUserEmail(id, request);
     }
 }

@@ -1,9 +1,8 @@
 package com.edwin.rrhh_api.modules.user;
 
 import com.edwin.rrhh_api.config.security.ControllerTest;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
-import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
+import com.edwin.rrhh_api.modules.user.dto.*;
+import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,8 +17,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -107,11 +105,11 @@ public class AuthUserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                {
-                    "email": "newuser@example.com",
-                    "fullName": "New User"
-                }
-            """))
+                                    {
+                                        "email": "newuser@example.com",
+                                        "fullName": "New User"
+                                    }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("newuser@example.com"))
                 .andExpect(jsonPath("$.fullName").value("New User"))
@@ -126,15 +124,72 @@ public class AuthUserControllerTest {
         mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                {
-                    "email": ""
-                }
-            """))
+                                    {
+                                        "email": ""
+                                    }
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors").exists()); // Depende del formato de tus errores
 
         verify(authUserService, never()).createUser(any());
     }
 
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void updateUserEmail_shouldReturnSuccessResponse() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String newEmail = "new.email@example.com";
+
+        // UpdateUserEmailRequest request = new UpdateUserEmailRequest(newEmail);
+        UpdateEmailResponse response = new UpdateEmailResponse("Correo actualizado correctamente", true);
+
+        when(authUserService.updateUserEmail(eq(userId), any(UpdateUserEmailRequest.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "email": "new.email@example.com"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Correo actualizado correctamente"))
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void updateUserEmail_shouldReturnBadRequestIfInvalidEmail() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/v1/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                      "email": "correo-invalido"
+                    }
+                    """))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void updateUserEmail_shouldReturnNotFoundIfUserDoesNotExist() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        when(authUserService.updateUserEmail(eq(userId), any(UpdateUserEmailRequest.class)))
+                .thenThrow(new UserNotFoundException("Usuario no encontrado"));
+
+        mockMvc.perform(put("/api/v1/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                      "email": "new.email@example.com"
+                    }
+                    """))
+                .andExpect(status().isNotFound());
+    }
 
 }

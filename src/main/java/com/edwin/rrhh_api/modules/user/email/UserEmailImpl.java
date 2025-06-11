@@ -2,6 +2,7 @@ package com.edwin.rrhh_api.modules.user.email;
 
 import com.edwin.rrhh_api.common.email.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserEmailImpl implements UserEmail {
 
     private final EmailService emailService;
@@ -24,6 +26,21 @@ public class UserEmailImpl implements UserEmail {
                 "Si no has solicitado crear una cuenta, por favor ignora este este mensaje.\n\n" +
                 "Gracias,\n" +
                 "RRHH-API Team";
+        log.info("Enviando correo de bienvenida");
+        emailService.sendSimpleEmail(toEmail, subject, body);
+    }
+
+    @Override
+    public void sendConfirmationEmailUpdated(EmailUpdatedData data) {
+        String toEmail = data.email();
+        String subject = "Correo actualizado en RRHH-API";
+        String body = "Hola " + data.fullName() + ",\n\n" +
+                "Se ha actualizado tu correo electrónico en RRHH-API.\n\n" +
+                "Tu correo actualizado es: " + toEmail + ".\n\n" +
+                "Debes confirmar tu correo electrónico, por favor, haz clic en el siguiente enlace: " + data.confirmationUrl() + ".\n\n" +
+                "Gracias,\n" +
+                "RRHH-API Team";
+        log.info("Enviando correo de actualización de correo");
         emailService.sendSimpleEmail(toEmail, subject, body);
     }
 }

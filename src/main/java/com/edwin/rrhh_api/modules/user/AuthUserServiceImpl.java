@@ -3,10 +3,8 @@ package com.edwin.rrhh_api.modules.user;
 import com.edwin.rrhh_api.common.PasswordGenerator;
 import com.edwin.rrhh_api.common.exception.EmailAlreadyExistsException;
 import com.edwin.rrhh_api.config.security.FirebaseService;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserDetailsResponse;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserMapper;
-import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
-import com.edwin.rrhh_api.modules.user.dto.CreateUserRequest;
+import com.edwin.rrhh_api.modules.user.dto.*;
+import com.edwin.rrhh_api.modules.user.email.EmailUpdatedData;
 import com.edwin.rrhh_api.modules.user.email.UserCreatedData;
 import com.edwin.rrhh_api.modules.user.email.UserEmail;
 import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
@@ -77,6 +75,24 @@ public class AuthUserServiceImpl implements AuthUserService {
 
     }
 
+    @Override
+    public UpdateEmailResponse updateUserEmail(UUID id, UpdateUserEmailRequest request) {
+        AuthUser userDB = authUserRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        UserRecord userFirebase = firebaseService.getUserById(userDB.getFirebaseUid());
+
+        if (userFirebase.getEmail().equalsIgnoreCase(request.email()))
+            return new UpdateEmailResponse("El correo indicado es el mismo, no se realiza ninguna actualización", false);
+
+        firebaseService.updateUserEmail(userDB.getFirebaseUid(), request.email());
+        userDB.setEmail(request.email());
+        userDB = authUserRepository.save(userDB);
+
+        sendConfirmationEmailUpdated(userDB);
+        return new UpdateEmailResponse("Correo actualizado correctamente", true);
+    }
+
     /**
      * Envía un correo de verificación al usuario creado
      *
@@ -92,6 +108,16 @@ public class AuthUserServiceImpl implements AuthUserService {
                 .build();
 
         userEmail.sendCreatedUserEmail(userCreatedData);
+    }
+
+    private void sendConfirmationEmailUpdated(AuthUser user) {
+        String confirmationUrl = firebaseService.createEmailVerificationLink(user.getEmail());
+        EmailUpdatedData data = EmailUpdatedData.builder()
+                .email(user.getEmail())
+                .confirmationUrl(confirmationUrl)
+                .fullName(user.getFullName())
+                .build();
+        userEmail.sendConfirmationEmailUpdated(data);
     }
 
 }
