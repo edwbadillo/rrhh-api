@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -187,8 +188,6 @@ public class AuthUserServiceTest {
                 .fullName(request.fullName())
                 .role("RH")
                 .isActive(true)
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
                 .build();
 
         when(authUserRepository.save(any(AuthUser.class))).thenReturn(savedUser);
@@ -463,7 +462,7 @@ public class AuthUserServiceTest {
     @Test
     void setUserActive_shouldEnableUser() {
         UUID id = UUID.randomUUID();
-        OffsetDateTime disabledAt = OffsetDateTime.now().minusDays(2);
+        LocalDateTime disabledAt = LocalDateTime.now().minusDays(2);
 
         AuthUser user = AuthUser.builder()
                 .id(id)

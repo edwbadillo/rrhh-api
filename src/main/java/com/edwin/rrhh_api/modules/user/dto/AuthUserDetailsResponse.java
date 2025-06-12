@@ -2,7 +2,7 @@ package com.edwin.rrhh_api.modules.user.dto;
 
 import lombok.Builder;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 /**
  * DTO con toda la información de un usuario registrado en base de datos.
@@ -23,8 +23,8 @@ public record AuthUserDetailsResponse(
         String fullName,
         String role,
         Boolean active,
-        OffsetDateTime disabledAt,
-        OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        LocalDateTime disabledAt,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {
 }

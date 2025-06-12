@@ -2,7 +2,7 @@ package com.edwin.rrhh_api.modules.user.dto;
 
 import lombok.Builder;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 /**
  * DTO con la información del proceso de desactivación/activación de un
@@ -16,6 +16,6 @@ import java.time.OffsetDateTime;
 public record SetUserActiveResponse(
         String message,
         boolean currentStatus,
-        OffsetDateTime disabledAt
+        LocalDateTime disabledAt
 ) {
 }

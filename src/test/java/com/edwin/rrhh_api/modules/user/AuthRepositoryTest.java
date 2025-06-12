@@ -1,8 +1,11 @@
 package com.edwin.rrhh_api.modules.user;
 
+import com.edwin.rrhh_api.config.jpa.AuditorAwareImpl;
+import com.edwin.rrhh_api.config.jpa.JpaAuditingConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -12,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
+@Import({JpaAuditingConfig.class, AuditorAwareImpl.class})
 @ActiveProfiles("test")
 public class AuthRepositoryTest {
 
@@ -27,8 +31,6 @@ public class AuthRepositoryTest {
                 .fullName("Admin User")
                 .role("ADMIN")
                 .isActive(true)
-                .createdAt(null)
-                .updatedAt(null)
                 .build();
 
         AuthUser user2 = AuthUser.builder()
@@ -37,8 +39,6 @@ public class AuthRepositoryTest {
                 .fullName("RH User")
                 .role("RH")
                 .isActive(true)
-                .createdAt(null)
-                .updatedAt(null)
                 .build();
 
         AuthUser user3 = AuthUser.builder()
@@ -47,8 +47,6 @@ public class AuthRepositoryTest {
                 .fullName("Employee User")
                 .role("EMPLOYEE")
                 .isActive(true)
-                .createdAt(null)
-                .updatedAt(null)
                 .build();
 
         repository.saveAll(List.of(user1, user2, user3));
@@ -71,8 +69,6 @@ public class AuthRepositoryTest {
                 .fullName("Admin User")
                 .role("ADMIN")
                 .isActive(true)
-                .createdAt(null)
-                .updatedAt(null)
                 .build();
 
         repository.save(user1);

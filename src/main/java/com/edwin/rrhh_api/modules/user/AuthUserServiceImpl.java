@@ -13,6 +13,7 @@ import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -64,8 +65,6 @@ public class AuthUserServiceImpl implements AuthUserService {
                 .fullName(request.fullName())
                 .role(AuthUser.Role.RH.toString())  // Todo usuario creado es RH
                 .isActive(true)
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
                 .build();
 
         AuthUser savedUser = authUserRepository.save(newUser);
@@ -108,7 +107,7 @@ public class AuthUserServiceImpl implements AuthUserService {
         firebaseService.setUserActive(userDB.getFirebaseUid(), request.isActive());
 
         if (!request.isActive())
-            userDB.setDisabledAt(OffsetDateTime.now());
+            userDB.setDisabledAt(LocalDateTime.now());
         else
             userDB.setDisabledAt(null);
 

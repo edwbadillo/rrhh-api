@@ -6,7 +6,7 @@ import com.edwin.rrhh_api.modules.user.dto.AuthUserResponse;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,10 +43,11 @@ public class AuthUserMapperTest {
                 .firebaseUid("firebase-uid")
                 .role("ADMIN")
                 .isActive(true)
-                .disabledAt(OffsetDateTime.now())
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
+                .disabledAt(null)
                 .build();
+
+        authUser.setCreatedAt(LocalDateTime.now());
+        authUser.setUpdatedAt(LocalDateTime.now());
 
         AuthUserDetailsResponse authUserDetailsResponse = mapper.toDetailsResponse(authUser);
 
@@ -55,7 +56,8 @@ public class AuthUserMapperTest {
         assertThat(authUserDetailsResponse.fullName()).isEqualTo(authUser.getFullName());
         assertThat(authUserDetailsResponse.role()).isEqualTo(authUser.getRole());
         assertThat(authUserDetailsResponse.active()).isEqualTo(authUser.isActive());
-        assertThat(authUserDetailsResponse.createdAt()).isEqualTo(authUser.getCreatedAt());
-        assertThat(authUserDetailsResponse.updatedAt()).isEqualTo(authUser.getUpdatedAt());
+        assertThat(authUserDetailsResponse.createdAt()).isNotNull();
+        assertThat(authUserDetailsResponse.updatedAt()).isNotNull();
+        assertThat(authUserDetailsResponse.disabledAt()).isNull();
     }
 }

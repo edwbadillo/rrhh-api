@@ -11,7 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,9 +97,9 @@ public class AuthUserControllerTest {
                 "New User",
                 "RH",
                 true,
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                OffsetDateTime.now()
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                LocalDateTime.now()
         );
 
         when(authUserService.createUser(any(CreateUserRequest.class))).thenReturn(response);
@@ -200,7 +200,7 @@ public class AuthUserControllerTest {
         UUID id = UUID.randomUUID();
 
         SetUserActiveResponse response = new SetUserActiveResponse(
-                "Estado actualizado correctamente", false, OffsetDateTime.now()
+                "Estado actualizado correctamente", false, LocalDateTime.now()
         );
 
         when(authUserService.setUserActive(eq(id), any(SetUserActiveRequest.class))).thenReturn(response);
