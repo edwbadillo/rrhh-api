@@ -123,7 +123,7 @@ public class FirebaseService {
     public void setUserActive(String firebaseUid, boolean isActive) {
         try {
             UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(firebaseUid)
-                    .setDisabled(isActive);
+                    .setDisabled(!isActive);
 
             firebaseAuth.updateUser(request);
         } catch (FirebaseAuthException e) {
