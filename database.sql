@@ -16,6 +16,7 @@ CREATE TABLE auth_user (
     firebase_uid VARCHAR(128) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     full_name VARCHAR(255) NOT NULL,
+    disabled_at TIMESTAMPTZ,
     
     role VARCHAR(20) NOT NULL CHECK (role IN ('ADMIN', 'RH', 'EMPLOYEE')),
     is_active BOOLEAN NOT NULL DEFAULT true,

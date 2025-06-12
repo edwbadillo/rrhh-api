@@ -3,6 +3,7 @@ package com.edwin.rrhh_api.common.exception;
 import com.edwin.rrhh_api.common.response.InvalidFieldResponse;
 import com.edwin.rrhh_api.common.response.InvalidRequestBodyResponse;
 import com.edwin.rrhh_api.common.response.SimpleMessageResponse;
+import com.edwin.rrhh_api.modules.user.exception.SetUserActiveException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -65,6 +66,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public SimpleMessageResponse handleEmailAlreadyExistsException(EmailAlreadyExistsException e) {
         log.error("{} in {}", e.getMessage(), e.getSource());
+        return new SimpleMessageResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(SetUserActiveException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public SimpleMessageResponse handleSetUserActiveException(SetUserActiveException e) {
         return new SimpleMessageResponse(e.getMessage());
     }
 }

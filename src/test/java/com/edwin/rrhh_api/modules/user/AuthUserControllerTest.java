@@ -2,6 +2,7 @@ package com.edwin.rrhh_api.modules.user;
 
 import com.edwin.rrhh_api.config.security.ControllerTest;
 import com.edwin.rrhh_api.modules.user.dto.*;
+import com.edwin.rrhh_api.modules.user.exception.SetUserActiveException;
 import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,7 @@ public class AuthUserControllerTest {
                 "RH",
                 true,
                 OffsetDateTime.now(),
+                OffsetDateTime.now(),
                 OffsetDateTime.now()
         );
 
@@ -166,10 +168,10 @@ public class AuthUserControllerTest {
         mockMvc.perform(put("/api/v1/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                    {
-                      "email": "correo-invalido"
-                    }
-                    """))
+                                {
+                                  "email": "correo-invalido"
+                                }
+                                """))
                 .andExpect(status().isBadRequest());
     }
 
@@ -185,11 +187,71 @@ public class AuthUserControllerTest {
         mockMvc.perform(put("/api/v1/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                    {
-                      "email": "new.email@example.com"
-                    }
-                    """))
+                                {
+                                  "email": "new.email@example.com"
+                                }
+                                """))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void setUserActive_shouldReturn200_whenSuccess() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        SetUserActiveResponse response = new SetUserActiveResponse(
+                "Estado actualizado correctamente", false, OffsetDateTime.now()
+        );
+
+        when(authUserService.setUserActive(eq(id), any(SetUserActiveRequest.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/users/set-active-status/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "isActive": false
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentStatus").value(false))
+                .andExpect(jsonPath("$.message").value("Estado actualizado correctamente"))
+                .andExpect(jsonPath("$.disabledAt").exists());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void setUserActive_shouldReturn404_whenUserNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        when(authUserService.setUserActive(eq(id), any(SetUserActiveRequest.class)))
+                .thenThrow(new UserNotFoundException("User not found"));
+
+        mockMvc.perform(put("/api/v1/users/set-active-status/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "isActive": false
+                                }
+                                """))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void setUserActive_shouldReturn400_whenAdminUser() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        when(authUserService.setUserActive(eq(id), any(SetUserActiveRequest.class)))
+                .thenThrow(new SetUserActiveException("Un ADMIN no puede ser desactivado"));
+
+        mockMvc.perform(put("/api/v1/users/set-active-status/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "isActive": false
+                                }
+                                """))
+                .andExpect(status().isConflict());
     }
 
 }

@@ -6,6 +6,7 @@ import com.edwin.rrhh_api.modules.user.dto.*;
 import com.edwin.rrhh_api.modules.user.email.EmailUpdatedData;
 import com.edwin.rrhh_api.modules.user.email.UserCreatedData;
 import com.edwin.rrhh_api.modules.user.email.UserEmail;
+import com.edwin.rrhh_api.modules.user.exception.SetUserActiveException;
 import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
 import com.google.firebase.auth.UserRecord;
 import org.junit.jupiter.api.Test;
@@ -400,4 +401,91 @@ public class AuthUserServiceTest {
         verify(userEmail, never()).sendConfirmationEmailUpdated(any());
     }
 
+    @Test
+    void setUserActive_shouldThrowUserNotFoundException_whenUserNotExists() {
+        UUID id = UUID.randomUUID();
+        SetUserActiveRequest request = new SetUserActiveRequest(false);
+
+        when(authUserRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authUserService.setUserActive(id, request))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessageContaining("User not found");
+    }
+
+    @Test
+    void setUserActive_shouldThrowException_whenUserIsAdmin() {
+        UUID id = UUID.randomUUID();
+        AuthUser user = AuthUser.builder()
+                .id(id)
+                .firebaseUid("firebase_uid")
+                .email("admin@test.com")
+                .fullName("Admin")
+                .role("ADMIN")
+                .isActive(true)
+                .build();
+
+        when(authUserRepository.findById(id)).thenReturn(Optional.of(user));
+
+        SetUserActiveRequest request = new SetUserActiveRequest(false);
+
+        assertThatThrownBy(() -> authUserService.setUserActive(id, request))
+                .isInstanceOf(SetUserActiveException.class)
+                .hasMessageContaining("Un ADMIN no puede ser desactivado");
+    }
+
+    @Test
+    void setUserActive_shouldDisableUser() {
+        UUID id = UUID.randomUUID();
+        AuthUser user = AuthUser.builder()
+                .id(id)
+                .firebaseUid("firebase_uid")
+                .email("user@test.com")
+                .fullName("Regular User")
+                .role("EMPLOYEE")
+                .isActive(true)
+                .build();
+
+        when(authUserRepository.findById(id)).thenReturn(Optional.of(user));
+        when(authUserRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        SetUserActiveRequest request = new SetUserActiveRequest(false);
+
+        SetUserActiveResponse response = authUserService.setUserActive(id, request);
+
+        verify(firebaseService).setUserActive("firebase_uid", false);
+
+        assertThat(response.currentStatus()).isFalse();
+        assertThat(response.message()).contains("actualizado correctamente");
+        assertThat(response.disabledAt()).isNotNull();
+    }
+
+    @Test
+    void setUserActive_shouldEnableUser() {
+        UUID id = UUID.randomUUID();
+        OffsetDateTime disabledAt = OffsetDateTime.now().minusDays(2);
+
+        AuthUser user = AuthUser.builder()
+                .id(id)
+                .firebaseUid("firebase_uid")
+                .email("user@test.com")
+                .fullName("Regular User")
+                .role("EMPLOYEE")
+                .isActive(false)
+                .disabledAt(disabledAt)
+                .build();
+
+        when(authUserRepository.findById(id)).thenReturn(Optional.of(user));
+        when(authUserRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        SetUserActiveRequest request = new SetUserActiveRequest(true);
+
+        SetUserActiveResponse response = authUserService.setUserActive(id, request);
+
+        verify(firebaseService).setUserActive("firebase_uid", true);
+
+        assertThat(response.currentStatus()).isTrue();
+        assertThat(response.message()).contains("actualizado correctamente");
+        assertThat(response.disabledAt()).isNull();
+    }
 }

@@ -42,4 +42,13 @@ public interface AuthUserService {
      * @return {@link UpdateEmailResponse}
      */
     UpdateEmailResponse updateUserEmail(UUID id, UpdateUserEmailRequest request);
+
+    /**
+     * Actualiza el estado de un usuario
+     *
+     * @param id      UUID del usuario a actualizar
+     * @param request Nuevo email del usuario
+     * @return {@link SetUserActiveResponse}
+     */
+    SetUserActiveResponse setUserActive(UUID id, SetUserActiveRequest request);
 }

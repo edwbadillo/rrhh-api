@@ -43,6 +43,7 @@ public class AuthUserMapperTest {
                 .firebaseUid("firebase-uid")
                 .role("ADMIN")
                 .isActive(true)
+                .disabledAt(OffsetDateTime.now())
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())
                 .build();

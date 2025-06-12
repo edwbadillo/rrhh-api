@@ -114,5 +114,23 @@ public class FirebaseService {
         }
     }
 
+    /**
+     * Habilita un usuario en Firebase.
+     *
+     * @param firebaseUid ID del usuario en Firebase
+     * @param isActive    estado del usuario
+     */
+    public void setUserActive(String firebaseUid, boolean isActive) {
+        try {
+            UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(firebaseUid)
+                    .setDisabled(isActive);
 
+            firebaseAuth.updateUser(request);
+        } catch (FirebaseAuthException e) {
+            if (e.getAuthErrorCode() == AuthErrorCode.USER_NOT_FOUND)
+                throw new UserNotFoundException("User not found");
+
+            throw new RuntimeException("Error al habilitar usuario en Firebase", e);
+        }
+    }
 }

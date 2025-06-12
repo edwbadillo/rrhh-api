@@ -40,6 +40,8 @@ public class AuthUser {
     // @Column(name = "is_active")
     private boolean isActive;
 
+    private OffsetDateTime disabledAt;
+
     // @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -55,6 +57,10 @@ public class AuthUser {
     @PreUpdate
     public void preUpdate() {
         updatedAt = OffsetDateTime.now();
+    }
+
+    public boolean isAdmin() {
+        return Role.ADMIN.toString().equals(role);
     }
 
     /**

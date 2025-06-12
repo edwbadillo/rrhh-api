@@ -7,6 +7,7 @@ import com.edwin.rrhh_api.modules.user.dto.*;
 import com.edwin.rrhh_api.modules.user.email.EmailUpdatedData;
 import com.edwin.rrhh_api.modules.user.email.UserCreatedData;
 import com.edwin.rrhh_api.modules.user.email.UserEmail;
+import com.edwin.rrhh_api.modules.user.exception.SetUserActiveException;
 import com.edwin.rrhh_api.modules.user.exception.UserNotFoundException;
 import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
@@ -94,6 +95,27 @@ public class AuthUserServiceImpl implements AuthUserService {
 
         sendConfirmationEmailUpdated(userDB);
         return new UpdateEmailResponse("Correo actualizado correctamente", true);
+    }
+
+    @Override
+    public SetUserActiveResponse setUserActive(UUID id, SetUserActiveRequest request) {
+        AuthUser userDB = authUserRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (userDB.isAdmin())
+            throw new SetUserActiveException("Un ADMIN no puede ser desactivado/activado desde la API");
+
+        firebaseService.setUserActive(userDB.getFirebaseUid(), request.isActive());
+
+        if (!request.isActive())
+            userDB.setDisabledAt(OffsetDateTime.now());
+        else
+            userDB.setDisabledAt(null);
+
+        userDB.setActive(request.isActive());
+        userDB = authUserRepository.save(userDB);
+
+        return new SetUserActiveResponse("Estado actualizado correctamente", request.isActive(), userDB.getDisabledAt());
     }
 
     /**

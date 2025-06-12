@@ -60,4 +60,16 @@ public class AuthUserController {
     public UpdateEmailResponse updateUserEmail(@PathVariable UUID id, @Valid @RequestBody UpdateUserEmailRequest request) {
         return authUserService.updateUserEmail(id, request);
     }
+
+    /**
+     * Actualiza el estado de un usuario
+     *
+     * @param id      UUID del usuario a actualizar
+     * @param request Nuevo email del usuario
+     * @return {@link AuthUserDetailsResponse}
+     */
+    @PutMapping("/set-active-status/{id}")
+    public SetUserActiveResponse setUserActive(@PathVariable UUID id, @Valid @RequestBody SetUserActiveRequest request) {
+        return authUserService.setUserActive(id, request);
+    }
 }
