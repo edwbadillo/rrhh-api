@@ -21,7 +21,7 @@ public class UserEmailImpl implements UserEmail {
         String subject = "Bienvenido a RRHH-API";
         String body = "Hola " + userCreatedData.user().getFullName() + ",\n\n" +
                 "Gracias por registrarte en RRHH-API. Tu cuenta ha sido creada con el siguiente correo electrónico: " + toEmail + ".\n\n" +
-                "Tu contraseña es: " + userCreatedData.password() + ".\n\n" +
+                "Tu contraseña es: " + userCreatedData.password() + "\n\n" +
                 "Debes confirmar tu correo electrónico, por favor haz clic en el siguiente enlace: " + userCreatedData.confirmationUrl() + ".\n\n" +
                 "Si no has solicitado crear una cuenta, por favor ignora este este mensaje.\n\n" +
                 "Gracias,\n" +
